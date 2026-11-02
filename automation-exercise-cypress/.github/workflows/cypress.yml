@@ -1,0 +1,65 @@
+name: Cypress Tests - Automation Exercise
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run Cypress Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Executar testes Cypress
+        uses: cypress-io/github-action@v6
+        with:
+          browser: chrome
+          headed: false
+        env:
+          CYPRESS_baseUrl: http://automationexercise.com
+
+      - name: Gerar relatório combinado
+        if: always()
+        run: |
+          npx mochawesome-merge cypress/reports/*.json > cypress/reports/combined.json
+          npx marge cypress/reports/combined.json -f report -o cypress/reports
+
+      - name: Publicar relatório Mochawesome
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cypress-report
+          path: cypress/reports/
+          retention-days: 30
+
+      - name: Publicar screenshots de falhas
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots/
+          retention-days: 7
+
+      - name: Publicar vídeos dos testes
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cypress-videos
+          path: cypress/videos/
+          retention-days: 7
