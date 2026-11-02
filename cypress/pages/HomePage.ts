@@ -2,7 +2,8 @@ export class HomePage {
   // Seletores
   private signupLoginBtn = 'a[href="/login"]';
   private productsBtn = 'a[href="/products"]';
-  private cartBtn = 'a[href="/view_cart"]';
+  // Escopo no menu do topo: o modal "Added!" também tem um link /view_cart.
+  private cartBtn = '.shop-menu a[href="/view_cart"]';
   private loggedInAs = 'a:contains("Logged in as")';
   private deleteAccountBtn = 'a[href="/delete_account"]';
   private logoutBtn = 'a[href="/logout"]';
