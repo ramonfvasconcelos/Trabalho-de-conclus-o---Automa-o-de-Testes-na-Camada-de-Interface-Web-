@@ -1,3 +1,5 @@
+import { UserData } from '../fixtures/userData';
+
 export class RegisterPage {
   // Seletores
   private accountInfoTitle = 'h2.title b';
@@ -27,22 +29,7 @@ export class RegisterPage {
     cy.get(this.accountInfoTitle).should('contain', 'Enter Account Information');
   }
 
-  fillAccountDetails(userData: {
-    password: string;
-    dayOfBirth: string;
-    monthOfBirth: string;
-    yearOfBirth: string;
-    firstName: string;
-    lastName: string;
-    company: string;
-    address1: string;
-    address2: string;
-    country: string;
-    state: string;
-    city: string;
-    zipcode: string;
-    mobileNumber: string;
-  }) {
+  fillAccountDetails(userData: UserData) {
     cy.get(this.titleMr).check();
     cy.get(this.password).type(userData.password);
     cy.get(this.daySelect).select(userData.dayOfBirth);

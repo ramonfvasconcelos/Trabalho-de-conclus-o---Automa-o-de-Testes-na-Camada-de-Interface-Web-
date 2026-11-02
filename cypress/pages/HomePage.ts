@@ -47,7 +47,8 @@ export class HomePage {
 
   subscribeWithEmail(email: string) {
     cy.scrollTo('bottom');
-    cy.get(this.subscriptionTitle).should('contain', 'SUBSCRIPTION');
+    // No HTML o texto é "Subscription"; o CSS é que o exibe em maiúsculas.
+    cy.contains(this.subscriptionTitle, /subscription/i).should('be.visible');
     cy.get(this.subscriptionInput).type(email);
     cy.get(this.subscribeBtn).click();
     cy.get(this.subscriptionSuccess)

@@ -1,10 +1,30 @@
-export const generateUser = () => {
-  const timestamp = Date.now();
+export interface UserData {
+  name: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  company: string;
+  address1: string;
+  address2: string;
+  country: string;
+  state: string;
+  city: string;
+  zipcode: string;
+  mobileNumber: string;
+  dayOfBirth: string;
+  monthOfBirth: string;
+  yearOfBirth: string;
+}
+
+// E-mail único por execução (timestamp + sufixo aleatório) para evitar conflitos.
+export const generateUser = (): UserData => {
+  const unique = `${Date.now()}${Math.floor(Math.random() * 1000)}`;
   return {
     name: 'Test User',
     firstName: 'Test',
     lastName: 'User',
-    email: `testuser${timestamp}@mailinator.com`,
+    email: `testuser${unique}@mailinator.com`,
     password: 'Test@12345',
     company: 'Test Company',
     address1: '123 Test Street',

@@ -1,83 +1,61 @@
-// Comandos customizados do Cypress
+import { UserData } from '../fixtures/userData';
 
 /**
- * Cria um novo usuário via UI e retorna seus dados
+ * Pré-condição via API do próprio site (API 11 - POST /api/createAccount).
+ * Mais rápido e estável do que criar o usuário pela interface em todo teste.
  */
-Cypress.Commands.add('createUser', (userData: UserData) => {
-  cy.visit('/login');
-  cy.get('input[data-qa="signup-name"]').type(userData.name);
-  cy.get('input[data-qa="signup-email"]').type(userData.email);
-  cy.get('button[data-qa="signup-button"]').click();
-
-  cy.get('h2.title b').should('contain', 'Enter Account Information');
-  cy.get('#id_gender1').check();
-  cy.get('input[data-qa="password"]').type(userData.password);
-  cy.get('select[data-qa="days"]').select(userData.dayOfBirth);
-  cy.get('select[data-qa="months"]').select(userData.monthOfBirth);
-  cy.get('select[data-qa="years"]').select(userData.yearOfBirth);
-  cy.get('#newsletter').check();
-  cy.get('#optin').check();
-  cy.get('input[data-qa="first_name"]').type(userData.firstName);
-  cy.get('input[data-qa="last_name"]').type(userData.lastName);
-  cy.get('input[data-qa="company"]').type(userData.company);
-  cy.get('input[data-qa="address"]').type(userData.address1);
-  cy.get('input[data-qa="address2"]').type(userData.address2);
-  cy.get('select[data-qa="country"]').select(userData.country);
-  cy.get('input[data-qa="state"]').type(userData.state);
-  cy.get('input[data-qa="city"]').type(userData.city);
-  cy.get('input[data-qa="zipcode"]').type(userData.zipcode);
-  cy.get('input[data-qa="mobile_number"]').type(userData.mobileNumber);
-  cy.get('button[data-qa="create-account"]').click();
-
-  cy.get('h2[data-qa="account-created"]').should('be.visible');
-  cy.get('a[data-qa="continue-button"]').click();
+Cypress.Commands.add('createUserApi', (user: UserData) => {
+  cy.request({
+    method: 'POST',
+    url: '/api/createAccount',
+    form: true,
+    body: {
+      name: user.name,
+      email: user.email,
+      password: user.password,
+      title: 'Mr',
+      birth_date: user.dayOfBirth,
+      birth_month: user.monthOfBirth,
+      birth_year: user.yearOfBirth,
+      firstname: user.firstName,
+      lastname: user.lastName,
+      company: user.company,
+      address1: user.address1,
+      address2: user.address2,
+      country: user.country,
+      zipcode: user.zipcode,
+      state: user.state,
+      city: user.city,
+      mobile_number: user.mobileNumber,
+    },
+  }).then((res) => {
+    // A API responde HTTP 200 com o código real dentro do corpo (texto JSON).
+    const body = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+    expect(body.responseCode, `createAccount: ${body.message}`).to.eq(201);
+  });
 });
 
 /**
- * Faz login com email e senha
+ * Limpeza via API (API 12 - DELETE /api/deleteAccount).
+ * Não falha se a conta já tiver sido apagada pelo próprio teste.
  */
-Cypress.Commands.add('login', (email: string, password: string) => {
-  cy.visit('/login');
-  cy.get('input[data-qa="login-email"]').type(email);
-  cy.get('input[data-qa="login-password"]').type(password);
-  cy.get('button[data-qa="login-button"]').click();
+Cypress.Commands.add('deleteUserApi', (user: UserData) => {
+  cy.request({
+    method: 'DELETE',
+    url: '/api/deleteAccount',
+    form: true,
+    body: { email: user.email, password: user.password },
+    failOnStatusCode: false,
+  });
 });
-
-/**
- * Deleta a conta do usuário logado
- */
-Cypress.Commands.add('deleteAccount', () => {
-  cy.get('a[href="/delete_account"]').click();
-  cy.get('h2[data-qa="account-deleted"]').should('be.visible');
-  cy.get('a[data-qa="continue-button"]').click();
-});
-
-// Declaração de tipos para TypeScript
-export interface UserData {
-  name: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  company: string;
-  address1: string;
-  address2: string;
-  country: string;
-  state: string;
-  city: string;
-  zipcode: string;
-  mobileNumber: string;
-  dayOfBirth: string;
-  monthOfBirth: string;
-  yearOfBirth: string;
-}
 
 declare global {
   namespace Cypress {
     interface Chainable {
-      createUser(userData: UserData): Chainable<void>;
-      login(email: string, password: string): Chainable<void>;
-      deleteAccount(): Chainable<void>;
+      createUserApi(user: UserData): Chainable<void>;
+      deleteUserApi(user: UserData): Chainable<void>;
     }
   }
 }
+
+export {};

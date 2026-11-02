@@ -1,32 +1,29 @@
 export class CartPage {
-  // Seletores
-  private proceedToCheckoutBtn = '.check_out';
-  private registerLoginModalBtn = 'u:contains("Register / Login")';
   private deliveryAddress = '#address_delivery';
-  private commentTextarea = 'textarea.form-control';
-  private placeOrderBtn = 'a.btn.btn-default.check_out';
+  private billingAddress = '#address_invoice';
+  private orderReview = '#cart_info';
+  private commentTextarea = 'textarea[name="message"]';
   private nameOnCard = 'input[data-qa="name-on-card"]';
   private cardNumber = 'input[data-qa="card-number"]';
   private cvc = 'input[data-qa="cvc"]';
   private expiryMonth = 'input[data-qa="expiry-month"]';
   private expiryYear = 'input[data-qa="expiry-year"]';
-  private payConfirmBtn = 'button#submit';
-  private orderSuccessMsg = 'p:contains("Congratulations! Your order has been confirmed!")';
+  private payConfirmBtn = 'button[data-qa="pay-button"]';
 
   verifyCartVisible() {
     cy.url().should('include', 'view_cart');
+    cy.get('#cart_info_table').should('be.visible');
   }
 
   clickProceedToCheckout() {
-    cy.get(this.proceedToCheckoutBtn).click();
+    cy.contains('.check_out', /proceed to checkout/i).click();
   }
 
-  clickRegisterLogin() {
-    cy.get(this.registerLoginModalBtn).click();
-  }
-
-  verifyDeliveryAddress() {
+  verifyAddressDetailsAndOrderReview() {
+    cy.url().should('include', '/checkout');
     cy.get(this.deliveryAddress).should('be.visible');
+    cy.get(this.billingAddress).should('be.visible');
+    cy.get(this.orderReview).should('be.visible');
   }
 
   enterComment(comment: string) {
@@ -34,16 +31,17 @@ export class CartPage {
   }
 
   clickPlaceOrder() {
-    cy.get(this.placeOrderBtn).click();
+    cy.contains('a', /place order/i).click();
   }
 
-  fillPaymentDetails(card: {
+  fillPaymentDetailsAndConfirm(card: {
     nameOnCard: string;
     cardNumber: string;
     cvc: string;
     expirationMonth: string;
     expirationYear: string;
   }) {
+    cy.url().should('include', '/payment');
     cy.get(this.nameOnCard).type(card.nameOnCard);
     cy.get(this.cardNumber).type(card.cardNumber);
     cy.get(this.cvc).type(card.cvc);
@@ -53,6 +51,11 @@ export class CartPage {
   }
 
   verifyOrderSuccess() {
-    cy.get(this.orderSuccessMsg).should('be.visible');
+    // O site confirma o pedido em /payment_done com "Order Placed!" e
+    // "Congratulations! Your order has been confirmed!".
+    cy.contains(
+      /order placed!|your order has been placed successfully!|congratulations! your order has been confirmed!/i,
+      { timeout: 20000 }
+    ).should('be.visible');
   }
 }

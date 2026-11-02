@@ -1,43 +1,28 @@
 import { HomePage } from '../pages/HomePage';
 import { LoginPage } from '../pages/LoginPage';
-import { RegisterPage } from '../pages/RegisterPage';
-import { generateUser } from '../fixtures/userData';
+import { generateUser, UserData } from '../fixtures/userData';
 
 describe('TC05 - Registrar com email já existente', () => {
   const homePage = new HomePage();
   const loginPage = new LoginPage();
-  const registerPage = new RegisterPage();
+  let user: UserData;
 
-  before(() => {
-    // Pré-condição: criar usuário que será reutilizado
-    const userData = generateUser();
-    Cypress.env('tc05User', userData);
-    cy.createUser(userData);
-    homePage.clickLogout();
+  // Pré-condição: e-mail já cadastrado, criado pela API do site.
+  beforeEach(() => {
+    user = generateUser();
+    cy.createUserApi(user);
+  });
+
+  afterEach(() => {
+    cy.deleteUserApi(user);
   });
 
   it('Deve exibir erro ao tentar registrar com email já cadastrado', () => {
-    const userData = Cypress.env('tc05User');
-
-    // 1-3. Navegar e verificar home page
     homePage.goTo();
     homePage.verifyHomePageVisible();
-
-    // 4. Clicar em Signup/Login
     homePage.clickSignupLogin();
-
-    // 5. Verificar 'New User Signup!'
     loginPage.verifySignupTitleVisible();
-
-    // 6-7. Tentar registrar com email já existente
-    loginPage.fillSignupForm(userData.name, userData.email);
-
-    // 8. Verificar mensagem de erro
+    loginPage.fillSignupForm(user.name, user.email);
     loginPage.verifyEmailExistsError();
-
-    // Cleanup: deletar conta
-    loginPage.login(userData.email, userData.password);
-    homePage.clickDeleteAccount();
-    registerPage.verifyAccountDeleted();
   });
 });
